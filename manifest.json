@@ -1,0 +1,38 @@
+{
+  "name"            : "Flacone",
+  "version"         : "0.1",
+  "description"     : "Flacone Framework",
+  "background_page" : "html/background.html",
+  "icons"           : {
+    "32"  : "images/icon-32.png",
+    "48"  : "images/icon-48.png",
+    "64"  : "images/icon-64.png",
+    "128" : "images/icon-128.png"
+  },
+  "browser_action"  : {
+    "default_icon" : "images/icon-19.png",
+    "title"        : "Flacone"
+    "popup"        : "html/popup.html"
+  },
+  "content_scripts" : [ 
+    {
+      "all_frames" : true,
+      "js"         : [ 
+         "scripts/common.js", 
+         "scripts/content/common.js" 
+      ],
+      "matches"    : [ 
+         "http://*/*", 
+         "https://*/*" 
+      ],
+      "run_at"     : "document_end"
+    } 
+  ],
+  "permissions"     : [
+    "http://*/*", 
+    "https://*/*", 
+    "tabs"
+  ],
+  "options_page"    : "options.html"
+}
+
