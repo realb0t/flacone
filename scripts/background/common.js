@@ -45,7 +45,7 @@ var Background = function() {
 
 var Handler = {
   'common' : function(request, sender, callback) {
-    callback(JSON.encode(request));
+    callback(request);
   }
 }
 
