@@ -18,10 +18,22 @@ var Background = function() {
     Call    : function() {
       return {
         allTabsInCurrentWindow    : function(request, callback) {
-          return this;
+          chrome.tabs.getAllInWindow(null, function(tabs) {
+            tabs.each(function(tab){
+              chrome.tabs.sendRequest(tab.id, request, callback);
+            });
+          });
         },
         allTabsInAllWindows       : function(request, callback) {
-          return this;
+          chrome.windows.getAll(null, function(windows) {
+            windows.each(function(window){
+              chrome.tabs.getAllInWindow(window.id, function(tabs) {
+                tabs.each(function(tab){
+                    chrome.tabs.sendRequest(tab.id, request, callback);
+                });
+              });
+            });
+          });
         },
         currentTabInCurrentWindow : function(request, callback) {
           return this;  
@@ -41,5 +53,10 @@ chrome.extension.onRequest.addListener(function(request, sender, callback){
   $H(request).each(function(value, key){
     try { request[key] = JSON.decode(value); } catch(e) {}
   });
-  // TODO реализовать вызов хендлеров
+
+  trace("request: ", request);
+
+  $H(request).each(function(request, action){
+      if (Handlers[action]) Handlers[action](request, sender, callback)
+  });
 });
