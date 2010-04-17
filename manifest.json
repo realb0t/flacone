@@ -18,6 +18,8 @@
     {
       "all_frames" : true,
       "js"         : [ 
+         "scripts/library/mootools/core.js",
+         "scripts/library/mootools/more.js",
          "scripts/common.js", 
          "scripts/content/common.js" 
       ],
