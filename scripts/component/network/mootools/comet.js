@@ -19,23 +19,23 @@ var Message = {
 }
 
 var CometTransport = new Class({
-    Implements: [Events, Options],
+  Implements: [Events, Options],
 
-    options: {
-    },
+  options: {
+  },
 
-    bXD: false,
-    connectionType: '',
+  bXD: false,
+  connectionType: '',
 
-    initialize: function(comet, options) {
-        this.setOptions(options);
-        this.comet = comet;
-        this.bXD   = (
-			    (this.comet.options.url.substring(0,4) == 'http')
-			    && (this.comet.options.url.substr(7,location.href.length).replace(/\/.*/, '') != location.host)
-			) ? true : false;
-	    this.connectionType = (this.bXD) ? 'callback-polling' : 'long-polling';
-    },
+  initialize: function(comet, options) {
+      this.setOptions(options);
+      this.comet = comet;
+      this.bXD   = (
+		    (this.comet.options.url.substring(0,4) == 'http')
+		    && (this.comet.options.url.substr(7,location.href.length).replace(/\/.*/, '') != location.host)
+		) ? true : false;
+    this.connectionType = (this.bXD) ? 'callback-polling' : 'long-polling';
+  },
 	startup: function(response) {
 		if (this.comet.connected) return;
 		this.tunnelInit();
@@ -58,7 +58,7 @@ var CometTransport = new Class({
 			this.comet.transport.closeTunnel();
 		}.bind(this));
 	},
-    closeTunnel: function() {
+  closeTunnel: function() {
 		if(!this.comet.initialized) return;
 		this.reconnect();
 	},
@@ -75,7 +75,7 @@ var CometTransport = new Class({
 			this.comet.transport.connect();
 		}
 	},
-    connect: function() {
+  connect: function() {
 
 		if (!this.comet.initialized) return;
 
@@ -89,74 +89,66 @@ var CometTransport = new Class({
 				'clientId'       : this.comet.clientId,
 				'id'             : this.comet.nextId++,
 				'channel'        : Message.Connect.channel,
-                'connectionType' : this.comet.transport.connectionType
+        'connectionType' : this.comet.transport.connectionType
 			});
 		}
 	},
-    send: function(url, msg, callback) {
+  send: function(url, msg, callback) {
 
-        var fCallback = (callback) ? callback : function(response) {
-			var response = this.comet._eval(response);
-			this.comet.deliver(response);
-			this.reconnect();
-		}.bind(this);
+    var fCallback = (callback) ? callback : function(response) {
+      var response = this.comet._eval(response);
+      this.comet.deliver(response);
+      this.reconnect();
+    }.bind(this);
 
-		//console.log('sended: ', { 'message': msg[0] });
-
-        new Request.JSONP({
-            'url'        : url,
-            'data'       : { 'message': JSON.encode(msg) },
-            'onComplete' : fCallback
-        }).send();
-    }
+    new Request.JSONP({
+        'url'        : url,
+        'data'       : { 'message': JSON.encode(msg) },
+        'onComplete' : fCallback
+    }).send();
+  }
 });
 
 var Comet = new Class({
-    Implements              : [Events, Options],
+  Implements              : [Events, Options],
 
-    options                 : {
-        'url': "http://dublin.dev.gvfs.ru:3040/cometd",
-    },
+  options                 : {
+      'url': "http://localhost/cometd",
+  },
 
-    batch                   : 0,
-    messageQueue            : [],
-    subscriptions           : [],
-    subscriptionsCallbacks  : [],
-    initialized             : [],
-    connected               : false,
-    nextId                  : 0,
-    transport               : null,
-    supportedConectionTypes : [ 'long-polling', 'callback-polling' ],
-    clientId                : '',
+  batch                   : 0,
+  messageQueue            : [],
+  subscriptions           : [],
+  subscriptionsCallbacks  : [],
+  initialized             : [],
+  connected               : false,
+  nextId                  : 0,
+  transport               : null,
+  supportedConectionTypes : [ 'long-polling', 'callback-polling' ],
+  clientId                : '',
 
-    initialize: function(options) {
-        this.setOptions(options);
-        this.init();
-    },
-    init: function() {
-        //trace('Comet Init for URL', this.options.url);
-        this.initialized = true;
-        this.transport   = new CometTransport(this);
+  initialize: function(options) {
+      this.setOptions(options);
+      this.init();
+  },
+  init: function() {
+      this.initialized = true;
+      this.transport   = new CometTransport(this);
 
-        this.startBatch()
-        this.transport.send(
-            this.options.url,
-            [$merge(Message.Handshake, {'id': this.nextId++})],
-            this.finishInit.bind(this)
-        );
-    },
+      this.startBatch()
+      this.transport.send(
+          this.options.url,
+          [$merge(Message.Handshake, {'id': this.nextId++})],
+          this.finishInit.bind(this)
+      );
+  },
 	finishInit: function(response) {
 		var response = this._eval(response)[0];
         var success  = (response.successful) ? response.successful : false;
 
 		if(response.advice) this.advice = response.advice;
-
-		// do version check
-
+		
 		if(success) {
-			// pick transport ?
-			// ......
-
 			this.transport.comet   = this;
 			this.transport.version = this.version;
 			this.clientId          = response.clientId;
@@ -164,17 +156,17 @@ var Comet = new Class({
 			this.endBatch();
 		}
 	},
-    startBatch: function() {
-        this.batch++;
-    },
-    endBatch: function() {
-		if(--this.batch == 0) {
-		    if (this.messageQueue.length > 0) {
-			    this.sendMessage(this.messageQueue);
-			}
-			this.messageQueue = [];
-		}
-    },
+  startBatch: function() {
+      this.batch++;
+  },
+  endBatch: function() {
+	  if(--this.batch == 0) {
+	      if (this.messageQueue.length > 0) {
+		      this.sendMessage(this.messageQueue);
+		  }
+		  this.messageQueue = [];
+	  }
+  },
 	sendMessage: function(msg) {
 
 		if(this.batch <= 0) {
@@ -195,7 +187,6 @@ var Comet = new Class({
 		}
 	},
 	subscribe: function(subscription, callback) {
-		// if this topic has not been subscribed to yet, send the message now
 		if(!this.subscriptions.contains(subscription)) {
 			this.subscriptions.push(subscription)
             if (callback) {
@@ -204,28 +195,25 @@ var Comet = new Class({
 
 			this.sendMessage($merge(Message.Subscribe, { 'subscription': subscription }));
 		}
-
-		//this.addEvent(subscription, callback);
 	},
-    unsubscribe: function(subscription) {
-	    this.sendMessage($merge(Message.Unsubscribe, { 'subscription': subscription }));
-	    delete this.subscriptions.erase(subscription);
-    },
-    publish: function(channel, data) {
-	    this.sendMessage({'channel': channel, 'data': data});
-    },
+  unsubscribe: function(subscription) {
+    this.sendMessage($merge(Message.Unsubscribe, { 'subscription': subscription }));
+    delete this.subscriptions.erase(subscription);
+  },
+  publish: function(channel, data) {
+    this.sendMessage({'channel': channel, 'data': data});
+  },
 	deliver: function(response) {
-		//response = eval(response);
 		response.each(function(element) {
 			this._deliver(element);
 		}.bind(this));
 	},
-    disconnect: function() {
+  disconnect: function() {
 		this.subscriptions.each(this.unsubscribe.bind(this));
 		this.sendMessage(Message.Disconnect);
 		this.initialized = false;
 	},
-    _deliver: function(msg, data) {
+  _deliver: function(msg, data) {
 		if(msg.advice) {
 			this.advice = msg.advice;
 		}
@@ -234,37 +222,23 @@ var Comet = new Class({
 			case Message.Connect.channel:
 				if(msg.successful && !this.connected) {
 					this.connected = this.initialized;
-					//this.endBatch();
-					/*
-					this.sendMessage(Message.Connect);
-					*/
-				} else {}
-					//this.connected = false;
-			break;
-
-			// add in subscription handling stuff
-			case Message.Subscribe.channel:
-			break;
-
-			case Message.Unsubscribe.channel:
+				}
 			break;
 		}
 
 		if(msg.data) {
-			// TODO ???
-			//this.transport.fireEvent(msg.channel, [oMsg]);
-            var cb = this.subscriptionsCallbacks[msg.channel];
-            if (cb) {
-                cb(msg);
-            }
+      var cb = this.subscriptionsCallbacks[msg.channel];
+      if (cb) {
+          cb(msg);
+      }
 		}
-    },
-    _eval: function(maybeObj) {
-         if ($type(maybeObj) == "string") {
-             return eval('(' + maybeObj + ')');
-         } else {
-             return maybeObj;
-         }
+  },
+  _eval: function(maybeObj) {
+    if ($type(maybeObj) == "string") {
+       return eval('(' + maybeObj + ')');
+    } else {
+       return maybeObj;
     }
+  }
 });
 
