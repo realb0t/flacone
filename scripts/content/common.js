@@ -22,5 +22,10 @@ chrome.extension.onRequest.addListener(function(request, sender, callback){
   $H(request).each(function(value, key){
     try { request[key] = JSON.decode(value); } catch(e) {}
   });
-  // TODO реализовать вызов хендлеров
+
+  debug("request: ", request);
+
+  $H(request).each(function(request, action){
+    if (Handlers[action]) Handlers[action](request, sender, callback)
+  });
 });

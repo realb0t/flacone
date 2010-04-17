@@ -54,9 +54,9 @@ chrome.extension.onRequest.addListener(function(request, sender, callback){
     try { request[key] = JSON.decode(value); } catch(e) {}
   });
 
-  trace("request: ", request);
+  debug("request: ", request);
 
   $H(request).each(function(request, action){
-      if (Handlers[action]) Handlers[action](request, sender, callback)
+    if (Handlers[action]) Handlers[action](request, sender, callback)
   });
 });
